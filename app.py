@@ -39,5 +39,34 @@ def login():
 def second_page():
     return "Welcome to the second page!"
 
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        # Fetch user data
+        username = request.form['username']
+        password = request.form['password']  # You should hash this!
+
+        cursor = conn.cursor()
+        
+        # Check if user already exists
+        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+        user = cursor.fetchone()
+        if user:
+            flash('Username already exists.')
+            return redirect(url_for('signup'))
+
+        # Insert new user into the database (Remember to hash the password in real-world scenarios!)
+        cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, password))
+        conn.commit()
+        cursor.close()
+
+        flash('Registration successful. Please login.')
+        return redirect(url_for('login'))
+
+    return render_template('signup.html')
+
+
+
+
 if __name__ == "__main__":
     app.run(debug=True)
